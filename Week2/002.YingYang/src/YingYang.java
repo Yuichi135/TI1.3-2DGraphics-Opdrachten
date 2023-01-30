@@ -30,9 +30,33 @@ public class YingYang extends Application {
 
     public void draw(FXGraphics2D graphics)
     {
-        graphics.setTransform(new AffineTransform());
+        AffineTransform affineTransform = new AffineTransform();
+//        affineTransform.translate(canvas.getWidth() / 2, canvas.getHeight() / 2);
+        graphics.setTransform(affineTransform);
         graphics.setBackground(Color.white);
         graphics.clearRect(0, 0, (int) canvas.getWidth(), (int) canvas.getHeight());
+
+        Area yingYang = new Area();
+
+        Ellipse2D circle = new Ellipse2D.Double(0, 0, 500, 500);
+        Ellipse2D topCircle = new Ellipse2D.Double(125, 0, 250, 250);
+        Ellipse2D bottomCircle = new Ellipse2D.Double(125, 250, 250, 250);
+        Rectangle rightHalf = new Rectangle(250, 0, 250, 500);
+
+        Ellipse2D topSmallCircle = new Ellipse2D.Double(225, 100, 50, 50);
+        Ellipse2D bottomSmallCircle = new Ellipse2D.Double(225, 350, 50, 50);
+
+        yingYang.add(new Area(circle));
+        yingYang.subtract(new Area(topCircle));
+        yingYang.subtract(new Area(rightHalf));
+        yingYang.add(new Area(bottomCircle));
+        yingYang.add(new Area(topSmallCircle));
+        yingYang.subtract(new Area(bottomSmallCircle));
+
+        graphics.fill(yingYang);
+        graphics.draw(circle);
+
+//        graphics.setColor(Color.getHSBColor((float) Math.random(), 1, 1)); // epilepsy warning
     }
 
 
