@@ -51,7 +51,7 @@ public class Spirograph extends Application {
 
         fxGraphics2D.setBackground(Color.WHITE);
         fxGraphics2D.translate(this.canvas.getWidth() / 2, this.canvas.getHeight() / 2);
-        fxGraphics2D.scale(.05, .05);
+        fxGraphics2D.scale(.1, .1);
         AffineTransform newTransform = fxGraphics2D.getTransform();
 
         generateButton.setOnAction(event -> draw(fxGraphics2D, false));
@@ -73,10 +73,10 @@ public class Spirograph extends Application {
         double c;
         double d;
         if (random) {
-            a = (int) (Math.random() * 500);
-            b = (int) (Math.random() * 49) + 1;
-            c = (int) (Math.random() * 500);
-            d = (int) (Math.random() * 49) + 1;
+            a = (Math.random() * 500);
+            b = (Math.random() * 49) + 1;
+            c = (Math.random() * 500);
+            d = (Math.random() * 49) + 1;
             this.radiusBig.setText(Double.toString(a));
             this.rotateSpeedBig.setText(Double.toString(b));
             this.radiusSmall.setText(Double.toString(c));
@@ -88,28 +88,32 @@ public class Spirograph extends Application {
             d = Double.parseDouble(this.rotateSpeedSmall.getText());
         }
 
+        graphics.setColor(Color.getHSBColor((float) Math.random() * 1, 1, 1));
+        double scale = 4;
+        double stepSize = 0.001;
+
         double old_x = a + c;
         double old_y = 0;
         double x;
         double y;
-//        double resolution = 2 * Math.PI * (kgv(a, c) / a);
-        double resolution = 2000;
-        double stepSize = .5;
-        double scale = 8;
 
-        graphics.setColor(Color.getHSBColor((float) Math.random() * 1, 1, 1));
-
-        for (double theta = 0; theta < resolution; theta += stepSize) {
-            x = a * Math.cos(b * theta) + c * Math.cos(d * theta);
-            y = a * Math.sin(b * theta) + c * Math.sin(d * theta);
+        for (double theta = 0; theta < (2 * Math.PI) * (2 * Math.PI); theta += stepSize) {
+            x = formulaX(a, b, c, d, theta);
+            y = formulaY(a, b, c, d, theta);
 
             graphics.draw(new Line2D.Double(old_x * scale, old_y * scale, x * scale, y * scale));
-
             old_x = x;
             old_y = y;
         }
     }
 
+    private double formulaX(double a, double b, double c, double d, double theta) {
+        return a * Math.cos(b * theta) + c * Math.cos(d * theta);
+    }
+
+    private double formulaY(double a, double b, double c, double d, double theta) {
+        return a * Math.sin(b * theta) + c * Math.sin(d * theta);
+    }
 
     public void drawHypotrochoid(FXGraphics2D graphics, boolean random) {
         // gegeven formule niet gebruikt (wtf is a, b, c, d en φ)
