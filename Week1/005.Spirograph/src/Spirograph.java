@@ -19,15 +19,15 @@ public class Spirograph extends Application {
     private final double PHI = (1 + Math.sqrt(5)) / 2;
 
     private Canvas canvas;
-    private TextField R;
-    private TextField r;
-    private TextField p;
-    private TextField steps;
+    private TextField radiusBig;
+    private TextField rotateSpeedBig;
+    private TextField radiusSmall;
+    private TextField rotateSpeedSmall;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
         // Poep code want ik heb dit voor de lessen gemaakt en ik weet niet wat ik doe
-        this.canvas = new Canvas(1900, 980);
+        this.canvas = new Canvas(900, 400);
 
         VBox mainBox = new VBox();
         HBox topBar = new HBox();
@@ -38,10 +38,10 @@ public class Spirograph extends Application {
         Button randomButton = new Button("Random");
         Button clearButton = new Button("Clear");
 
-        topBar.getChildren().add(R = new TextField("200"));
-        topBar.getChildren().add(r = new TextField("400"));
-        topBar.getChildren().add(p = new TextField("50"));
-        topBar.getChildren().add(steps = new TextField("500"));
+        topBar.getChildren().add(radiusBig = new TextField("200"));
+        topBar.getChildren().add(rotateSpeedBig = new TextField("1"));
+        topBar.getChildren().add(radiusSmall = new TextField("50"));
+        topBar.getChildren().add(rotateSpeedSmall = new TextField("10"));
         topBar.getChildren().add(randomButton);
         topBar.getChildren().add(generateButton);
         topBar.getChildren().add(clearButton);
@@ -51,7 +51,7 @@ public class Spirograph extends Application {
 
         fxGraphics2D.setBackground(Color.WHITE);
         fxGraphics2D.translate(this.canvas.getWidth() / 2, this.canvas.getHeight() / 2);
-        fxGraphics2D.scale(.12, .12);
+        fxGraphics2D.scale(.05, .05);
         AffineTransform newTransform = fxGraphics2D.getTransform();
 
         generateButton.setOnAction(event -> draw(fxGraphics2D, false));
@@ -67,8 +67,51 @@ public class Spirograph extends Application {
         primaryStage.show();
     }
 
-
     public void draw(FXGraphics2D graphics, boolean random) {
+        double a;
+        double b;
+        double c;
+        double d;
+        if (random) {
+            a = (int) (Math.random() * 500);
+            b = (int) (Math.random() * 49) + 1;
+            c = (int) (Math.random() * 500);
+            d = (int) (Math.random() * 49) + 1;
+            this.radiusBig.setText(Double.toString(a));
+            this.rotateSpeedBig.setText(Double.toString(b));
+            this.radiusSmall.setText(Double.toString(c));
+            this.rotateSpeedSmall.setText(Double.toString(d));
+        } else {
+            a = Double.parseDouble(this.radiusBig.getText());
+            b = Double.parseDouble(this.rotateSpeedBig.getText());
+            c = Double.parseDouble(this.radiusSmall.getText());
+            d = Double.parseDouble(this.rotateSpeedSmall.getText());
+        }
+
+        double old_x = a + c;
+        double old_y = 0;
+        double x;
+        double y;
+//        double resolution = 2 * Math.PI * (kgv(a, c) / a);
+        double resolution = 2000;
+        double stepSize = .5;
+        double scale = 8;
+
+        graphics.setColor(Color.getHSBColor((float) Math.random() * 1, 1, 1));
+
+        for (double theta = 0; theta < resolution; theta += stepSize) {
+            x = a * Math.cos(b * theta) + c * Math.cos(d * theta);
+            y = a * Math.sin(b * theta) + c * Math.sin(d * theta);
+
+            graphics.draw(new Line2D.Double(old_x * scale, old_y * scale, x * scale, y * scale));
+
+            old_x = x;
+            old_y = y;
+        }
+    }
+
+
+    public void drawHypotrochoid(FXGraphics2D graphics, boolean random) {
         // gegeven formule niet gebruikt (wtf is a, b, c, d en φ)
 //        x = a × cos(b × φ) + c × cos(d × φ);
 //        y = a × sin(b × φ) + c × sin(d × φ);
@@ -85,13 +128,14 @@ public class Spirograph extends Application {
             b = (Math.random() * 500);
             p = Math.random() * 500;
             // Aantal stappen om een complete cirkel te maken
-            steps = 2 * Math.PI * (kgv((int) a, (int) b) / a);
+            steps = 2 * Math.PI * (kgv((int) (a * 100), (int) (b * 100)) / (a * 10000));
+            System.out.println(steps);
             h = p;
         } else {
-            a = Double.parseDouble(this.R.getText());
-            b = Double.parseDouble(this.r.getText());
-            p = Double.parseDouble(this.p.getText());
-            steps = Double.parseDouble(this.steps.getText());
+            a = Double.parseDouble(this.radiusBig.getText());
+            b = Double.parseDouble(this.rotateSpeedBig.getText());
+            p = Double.parseDouble(this.radiusSmall.getText());
+            steps = Double.parseDouble(this.rotateSpeedSmall.getText());
             h = p;
         }
 
