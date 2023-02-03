@@ -1,10 +1,13 @@
 import java.awt.*;
 import java.awt.geom.*;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Application;
 
 import static javafx.application.Application.launch;
 
+import javafx.event.ActionEvent;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
@@ -13,6 +16,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import org.jfree.fx.FXGraphics2D;
 
 public class Spirograph extends Application {
@@ -23,11 +27,30 @@ public class Spirograph extends Application {
     private TextField rotateSpeedBig;
     private TextField radiusSmall;
     private TextField rotateSpeedSmall;
+    private double a;
+    private double b;
+    private double c;
+    private double d;
+    private double theta;
+    private final double stepSize = 0.001;
+    private final double scale = 1;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
         // Poep code want ik heb dit voor de lessen gemaakt en ik weet niet wat ik doe
         this.canvas = new Canvas(900, 400);
+        primaryStage.setScene(new Scene(this.createTopbar()));
+        primaryStage.setTitle("Spirograph");
+        primaryStage.show();
+    }
+
+    private VBox createTopbar() {
+        FXGraphics2D fxGraphics2D = new FXGraphics2D(canvas.getGraphicsContext2D());
+        AffineTransform originalTransform = fxGraphics2D.getTransform();
+        fxGraphics2D.setBackground(Color.WHITE);
+        fxGraphics2D.translate(this.canvas.getWidth() / 2, this.canvas.getHeight() / 2);
+        fxGraphics2D.scale(.2, .2);
+        AffineTransform newTransform = fxGraphics2D.getTransform();
 
         VBox mainBox = new VBox();
         HBox topBar = new HBox();
@@ -46,52 +69,34 @@ public class Spirograph extends Application {
         topBar.getChildren().add(generateButton);
         topBar.getChildren().add(clearButton);
 
-        FXGraphics2D fxGraphics2D = new FXGraphics2D(canvas.getGraphicsContext2D());
-        AffineTransform originalTransform = fxGraphics2D.getTransform();
+        generateButton.setOnAction(event -> {
+            setVariables(false);
+            Timeline continuousUpdate = new Timeline(new KeyFrame(Duration.millis(1), (ActionEvent e) -> this.drawPart(fxGraphics2D)));
+            continuousUpdate.setCycleCount(50000);
+            continuousUpdate.play();
 
-        fxGraphics2D.setBackground(Color.WHITE);
-        fxGraphics2D.translate(this.canvas.getWidth() / 2, this.canvas.getHeight() / 2);
-        fxGraphics2D.scale(.1, .1);
-        AffineTransform newTransform = fxGraphics2D.getTransform();
-
-        generateButton.setOnAction(event -> draw(fxGraphics2D, false));
-        randomButton.setOnAction(event -> draw(fxGraphics2D, true));
+        });
+        randomButton.setOnAction(event -> {
+            setVariables(true);
+            Timeline continuousUpdate = new Timeline(new KeyFrame(Duration.millis(1), (ActionEvent e) -> this.drawPart(fxGraphics2D)));
+            continuousUpdate.setCycleCount(50000);
+            continuousUpdate.play();
+        });
         clearButton.setOnAction(event -> {
+//            new FXGraphics2D(canvas.getGraphicsContext2D()).clearRect(0, 0, (int) canvas.getWidth(), (int) canvas.getHeight());
             fxGraphics2D.setTransform(originalTransform);
             fxGraphics2D.clearRect(0, 0, (int) canvas.getWidth(), (int) canvas.getHeight());
             fxGraphics2D.setTransform(newTransform);
         });
 
-        primaryStage.setScene(new Scene(mainBox));
-        primaryStage.setTitle("Spirograph");
-        primaryStage.show();
+
+        return mainBox;
     }
 
-    public void draw(FXGraphics2D graphics, boolean random) {
-        double a;
-        double b;
-        double c;
-        double d;
-        if (random) {
-            a = (Math.random() * 500);
-            b = (Math.random() * 49) + 1;
-            c = (Math.random() * 500);
-            d = (Math.random() * 49) + 1;
-            this.radiusBig.setText(Double.toString(a));
-            this.rotateSpeedBig.setText(Double.toString(b));
-            this.radiusSmall.setText(Double.toString(c));
-            this.rotateSpeedSmall.setText(Double.toString(d));
-        } else {
-            a = Double.parseDouble(this.radiusBig.getText());
-            b = Double.parseDouble(this.rotateSpeedBig.getText());
-            c = Double.parseDouble(this.radiusSmall.getText());
-            d = Double.parseDouble(this.rotateSpeedSmall.getText());
-        }
+    public void draw(FXGraphics2D graphics, boolean isRandom) {
+        this.setVariables(isRandom);
 
         graphics.setColor(Color.getHSBColor((float) Math.random() * 1, 1, 1));
-        double scale = 4;
-        double stepSize = 0.001;
-
         double old_x = a + c;
         double old_y = 0;
         double x;
@@ -169,19 +174,50 @@ public class Spirograph extends Application {
         launch(Spirograph.class);
     }
 
-    // KGV van internet en naar doubles veranderd
-    public static double kgv(double number1, double number2) {
+    // KGV van internet
+    public static int kgv(int number1, int number2) {
         if (number1 == 0 || number2 == 0) {
             return 0;
         }
-        double absNumber1 = Math.abs(number1);
-        double absNumber2 = Math.abs(number2);
-        double absHigherNumber = Math.max(absNumber1, absNumber2);
-        double absLowerNumber = Math.min(absNumber1, absNumber2);
-        double lcm = absHigherNumber;
+        int absNumber1 = Math.abs(number1);
+        int absNumber2 = Math.abs(number2);
+        int absHigherNumber = Math.max(absNumber1, absNumber2);
+        int absLowerNumber = Math.min(absNumber1, absNumber2);
+        int lcm = absHigherNumber;
         while (lcm % absLowerNumber != 0) {
             lcm += absHigherNumber;
         }
         return lcm;
+    }
+
+    private void setVariables(boolean isRandom) {
+        if (isRandom) {
+            this.a = (Math.random() * 500);
+            this.b = (Math.random() * 49) + 1;
+            this.c = (Math.random() * 500);
+            this.d = (Math.random() * 49) + 1;
+            this.radiusBig.setText(Double.toString(a));
+            this.rotateSpeedBig.setText(Double.toString(b));
+            this.radiusSmall.setText(Double.toString(c));
+            this.rotateSpeedSmall.setText(Double.toString(d));
+        } else {
+            this.a = Double.parseDouble(this.radiusBig.getText());
+            this.b = Double.parseDouble(this.rotateSpeedBig.getText());
+            this.c = Double.parseDouble(this.radiusSmall.getText());
+            this.d = Double.parseDouble(this.rotateSpeedSmall.getText());
+        }
+        this.theta = 0;
+    }
+    public void drawPart(FXGraphics2D graphics) {
+        theta += stepSize;
+
+        graphics.setColor(Color.getHSBColor((float) theta/10, 1, 1));
+
+        double old_x = formulaX(a, b, c, d, theta - stepSize);
+        double old_y = formulaY(a, b, c, d, theta - stepSize);
+        double x = formulaX(a, b, c, d, theta);
+        double y = formulaY(a, b, c, d, theta);
+
+        graphics.draw(new Line2D.Double(old_x * scale, old_y * scale, x * scale, y * scale));
     }
 }
