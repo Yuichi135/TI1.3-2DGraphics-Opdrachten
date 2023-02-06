@@ -1,6 +1,8 @@
 import java.awt.*;
 import java.awt.geom.*;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Application;
 
 import static javafx.application.Application.launch;
@@ -10,6 +12,7 @@ import javafx.scene.Scene;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import org.jfree.fx.FXGraphics2D;
 import org.jfree.fx.ResizableCanvas;
 
@@ -18,6 +21,7 @@ public class BlockDrag extends Application {
     private Rectangle2D.Double[] shapes;
     private Color[] colors;
     private int activeShape = -1;
+    private final int amountOfShapes = 10;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -31,10 +35,13 @@ public class BlockDrag extends Application {
 
         canvas.setOnMousePressed(e -> mousePressed(e));
         canvas.setOnMouseReleased(e -> mouseReleased(e));
-        canvas.setOnMouseDragged(e -> mouseDragged(e, new FXGraphics2D(canvas.getGraphicsContext2D())));
+        canvas.setOnMouseDragged(e -> mouseDragged(e));
 
         createShapes();
         draw(new FXGraphics2D(canvas.getGraphicsContext2D()));
+//        Timeline timeline = new Timeline(new KeyFrame(Duration.millis(1), event -> draw(new FXGraphics2D(canvas.getGraphicsContext2D()))));
+//        timeline.setCycleCount(Timeline.INDEFINITE);
+//        timeline.play();
     }
 
 
@@ -46,9 +53,11 @@ public class BlockDrag extends Application {
         if (this.shapes == null || this.colors == null)
             return;
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < this.amountOfShapes; i++) {
             graphics.setColor(colors[i]);
             graphics.fill(this.shapes[i]);
+            graphics.setColor(Color.BLACK);
+            graphics.draw(this.shapes[i]);
         }
     }
 
@@ -70,14 +79,14 @@ public class BlockDrag extends Application {
         this.activeShape = -1;
     }
 
-    private void mouseDragged(MouseEvent e, FXGraphics2D graphics) {
+    private void mouseDragged(MouseEvent e) {
         if (this.activeShape == -1)
             return;
 
         Rectangle2D.Double activeElement = this.shapes[this.activeShape];
 
-        double xOffset = e.getX() - activeElement.getX();
-        double yOffset = e.getY() - activeElement.getY();
+        double xOffset = activeElement.getX() - e.getX();
+        double yOffset = activeElement.getY() - e.getY();
 
 //        System.out.println();
 //        System.out.println("MouseX:\t" + e.getX());
@@ -85,20 +94,23 @@ public class BlockDrag extends Application {
 //        System.out.println("Offset:\t" + xOffset);
 //        System.out.println("temp\t:" + (activeElement.getX() - xOffset + 50));
 
-        activeElement.setRect(e.getX(),  e.getY(), activeElement.getWidth(), activeElement.getHeight());
+        // In het midden vastpakken
+        activeElement.setRect(e.getX() - 25, e.getY() - 25, activeElement.getWidth(), activeElement.getHeight());
 
-        draw(graphics);
+//         Op de juiste plek vastpakken (werk niet)
+//        activeElement.setRect(e.getX() - xOffset, e.getY() - yOffset, activeElement.getWidth(), activeElement.getHeight());
+
+        draw(new FXGraphics2D(canvas.getGraphicsContext2D()));
     }
 
     private void createShapes() {
-        this.shapes = new Rectangle2D.Double[10];
-        this.colors = new Color[10];
+        this.shapes = new Rectangle2D.Double[this.amountOfShapes];
+        this.colors = new Color[this.amountOfShapes];
         double squareSize = 50;
         double maxHeight = this.canvas.getHeight() - squareSize;
         double maxWidth = this.canvas.getWidth() - squareSize;
 
-
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < this.amountOfShapes; i++) {
             this.shapes[i] = new Rectangle2D.Double(Math.random() * maxWidth, Math.random() * maxHeight, squareSize, squareSize);
             this.colors[i] = Color.getHSBColor((float) Math.random(), 1, 1);
         }
