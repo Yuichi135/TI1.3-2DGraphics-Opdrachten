@@ -36,6 +36,13 @@ public class YingYang extends Application {
         graphics.setBackground(Color.white);
         graphics.clearRect(0, 0, (int) canvas.getWidth(), (int) canvas.getHeight());
 
+        graphics.fill(YingYang.getShape());
+        graphics.draw(new Ellipse2D.Double(0, 0, 500, 500));
+
+//        graphics.setColor(Color.getHSBColor((float) Math.random(), 1, 1)); // epilepsy warning
+    }
+
+    public static Shape getShape() {
         Area yingYang = new Area();
 
         Ellipse2D circle = new Ellipse2D.Double(0, 0, 500, 500);
@@ -53,10 +60,7 @@ public class YingYang extends Application {
         yingYang.add(new Area(topSmallCircle));
         yingYang.subtract(new Area(bottomSmallCircle));
 
-        graphics.fill(yingYang);
-        graphics.draw(circle);
-
-//        graphics.setColor(Color.getHSBColor((float) Math.random(), 1, 1)); // epilepsy warning
+        return yingYang;
     }
 
 

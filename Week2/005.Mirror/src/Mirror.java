@@ -22,51 +22,42 @@ public class Mirror extends Application {
         primaryStage.setScene(new Scene(mainPane));
         primaryStage.setTitle("Mirror");
         primaryStage.show();
-        FXGraphics2D graphics = new FXGraphics2D(canvas.getGraphicsContext2D());
-//        draw(new FXGraphics2D(canvas.getGraphicsContext2D()));
     }
 
 
     public void draw(FXGraphics2D graphics) {
-
-        AffineTransform transform = new AffineTransform();
-        transform.translate(150, 150);
-        transform.scale(0.5, 0.5);
-        graphics.setTransform(transform);
-        graphics.setBackground(Color.white);
+        graphics.setTransform(new AffineTransform());
+        graphics.setBackground(Color.WHITE);
         graphics.clearRect(0, 0, (int) canvas.getWidth(), (int) canvas.getHeight());
+        graphics.translate(150, 150);
 
-
+        // Reference X line
         graphics.setColor(Color.RED);
         graphics.draw(new Line2D.Double(-1000, 0, 1000, 0));
-//        graphics.setColor(Color.GREEN);
-//        graphics.draw(new Line2D.Double(0, -1000, 0, 1000));
-        graphics.setColor(Color.BLACK);
-        drawSquare(graphics);
-        drawGraphLine(graphics);
 
+        // Originele rechthoek
+        graphics.draw(this.getShape());
 
-        transform.concatenate(new AffineTransform(1, 0, 0, 1, 0, 0));
+        double k = 1;
+        double shear = (2 * k) / (1 + (k * k));
+        double xScale = (2 / (1 + (k * k))) - 1;
+        double yScale = ((2 * (k * k)) / (1 + (k * k))) - 1;
 
-        graphics.setTransform(transform);
-        drawSquare(graphics);
+//        System.out.println("Shear: " + shear);
+//        System.out.println("xScale: " + xScale);
+//        System.out.println("yScale: " + yScale);
+
+        // y = k*x lijn
+        graphics.draw(new Line2D.Double(0, 0, 1000, (1000 * k)));
+
+        AffineTransform transform = new AffineTransform(xScale, shear, shear, yScale, 0, 0);
+        graphics.draw(transform.createTransformedShape(this.getShape()));
     }
 
-    private void drawGraphLine(FXGraphics2D graphics) {
-        double lastY = 0;
-        for (int x = 0; x < 1000; x++) {
-            double y = 2.5 * x;
-            graphics.draw(new Line2D.Double(x, y, (x - 1), lastY));
-            lastY = y;
-        }
+    public Shape getShape() {
+//        return new Rectangle2D.Double(0, 150, 100, 100);
+        return YingYang.getShape();
     }
-
-
-
-    private void drawSquare(FXGraphics2D graphics) {
-        graphics.draw(new Rectangle2D.Double(0, 150, 100, 100));
-    }
-
 
     public static void main(String[] args) {
         launch(Mirror.class);
