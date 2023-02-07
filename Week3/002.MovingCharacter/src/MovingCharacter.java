@@ -1,6 +1,7 @@
 import java.awt.*;
 import java.awt.geom.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 
 import javafx.animation.AnimationTimer;
@@ -20,10 +21,25 @@ import org.jfree.fx.ResizableCanvas;
 
 public class MovingCharacter extends Application {
     private ResizableCanvas canvas;
+    private BufferedImage image;
+    private BufferedImage[] tiles;
+    private int activeImage = 0;
+    private double frame;
+    private double fps = 12;
 
     @Override
-    public void start(Stage stage) throws Exception
-    {
+    public void start(Stage stage) throws Exception {
+
+        try {
+            image = ImageIO.read(new File("Week3/002.MovingCharacter/resources/images/sprite.png"));
+            tiles = new BufferedImage[65];
+
+            for (int i = 0; i < 65; i++) {
+                tiles[i] = image.getSubimage(64 * (i%8), 64 * (i/8), 64, 64);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         BorderPane mainPane = new BorderPane();
         canvas = new ResizableCanvas(g -> draw(g), mainPane);
@@ -33,8 +49,7 @@ public class MovingCharacter extends Application {
             long last = -1;
 
             @Override
-            public void handle(long now)
-            {
+            public void handle(long now) {
                 if (last == -1)
                     last = now;
                 update((now - last) / 1000000000.0);
@@ -50,20 +65,27 @@ public class MovingCharacter extends Application {
     }
 
 
-    public void draw(FXGraphics2D graphics)
-    {
-        graphics.setTransform(new AffineTransform());
+    public void draw(FXGraphics2D graphics) {
+        AffineTransform transform = new AffineTransform();
+        graphics.setTransform(transform);
         graphics.setBackground(Color.white);
         graphics.clearRect(0, 0, (int) canvas.getWidth(), (int) canvas.getHeight());
+
+        graphics.drawImage(tiles[activeImage], transform, (img, infoflags, x1, y1, width, height) -> true);
     }
 
 
-    public void update(double deltaTime)
-    {
+    public void update(double deltaTime) {
+        System.out.println(frame);
+        frame += deltaTime;
+        if (frame > 1/fps) {
+            frame = frame % 1/fps;
+            activeImage = (activeImage + 1) % tiles.length;
+        }
+
     }
 
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         launch(MovingCharacter.class);
     }
 
