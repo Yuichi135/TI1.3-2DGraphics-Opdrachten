@@ -18,10 +18,12 @@ import org.jfree.fx.ResizableCanvas;
 
 public class BlockDrag extends Application {
     ResizableCanvas canvas;
-    private Rectangle2D.Double[] shapes;
-    private Color[] colors;
+    private Renderable[] renderables;
     private int activeShape = -1;
     private final int amountOfShapes = 10;
+    private FXGraphics2D graphics;
+    private double xOffset;
+    private double yOffset;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -37,11 +39,10 @@ public class BlockDrag extends Application {
         canvas.setOnMouseReleased(e -> mouseReleased(e));
         canvas.setOnMouseDragged(e -> mouseDragged(e));
 
+        graphics = new FXGraphics2D(canvas.getGraphicsContext2D());
+
         createShapes();
-        draw(new FXGraphics2D(canvas.getGraphicsContext2D()));
-//        Timeline timeline = new Timeline(new KeyFrame(Duration.millis(1), event -> draw(new FXGraphics2D(canvas.getGraphicsContext2D()))));
-//        timeline.setCycleCount(Timeline.INDEFINITE);
-//        timeline.play();
+        draw(graphics);
     }
 
 
@@ -50,15 +51,10 @@ public class BlockDrag extends Application {
         graphics.setBackground(Color.white);
         graphics.clearRect(0, 0, (int) canvas.getWidth(), (int) canvas.getHeight());
 
-        if (this.shapes == null || this.colors == null)
+        if (this.renderables == null)
             return;
 
-        for (int i = 0; i < this.amountOfShapes; i++) {
-            graphics.setColor(colors[i]);
-            graphics.fill(this.shapes[i]);
-            graphics.setColor(Color.BLACK);
-            graphics.draw(this.shapes[i]);
-        }
+        update();
     }
 
 
@@ -67,12 +63,15 @@ public class BlockDrag extends Application {
     }
 
     private void mousePressed(MouseEvent e) {
-        for (int i = 0; i < this.shapes.length; i++) {
-            if ((e.getX() >= this.shapes[i].getBounds2D().getX() && e.getX() <= this.shapes[i].getBounds2D().getX() + this.shapes[i].getBounds2D().getWidth())
-                    && (e.getY() >= this.shapes[i].getBounds2D().getY() && e.getY() <= this.shapes[i].getBounds2D().getY() + this.shapes[i].getBounds2D().getHeight())) {
+        for (int i = 0; i < this.renderables.length; i++) {
+            if (this.renderables[i].contains(e.getX(), e.getY()))
                 this.activeShape = i;
-            }
         }
+
+        Point2D point = this.renderables[this.activeShape].getCoords();
+
+        this.xOffset = point.getX() - e.getX();
+        this.yOffset = point.getY() - e.getY();
     }
 
     private void mouseReleased(MouseEvent e) {
@@ -80,39 +79,25 @@ public class BlockDrag extends Application {
     }
 
     private void mouseDragged(MouseEvent e) {
-        if (this.activeShape == -1)
+        if (this.activeShape < 0 || this.activeShape >=   this.amountOfShapes)
             return;
 
-        Rectangle2D.Double activeElement = this.shapes[this.activeShape];
+        this.renderables[this.activeShape].setCoords(new Point2D.Double(e.getX() + xOffset, e.getY() + yOffset));
 
-        double xOffset = activeElement.getX() - e.getX();
-        double yOffset = activeElement.getY() - e.getY();
+        draw(graphics);
+    }
 
-//        System.out.println();
-//        System.out.println("MouseX:\t" + e.getX());
-//        System.out.println("SquareX:\t" + activeElement.getX());
-//        System.out.println("Offset:\t" + xOffset);
-//        System.out.println("temp\t:" + (activeElement.getX() - xOffset + 50));
-
-        // In het midden vastpakken
-        activeElement.setRect(e.getX() - 25, e.getY() - 25, activeElement.getWidth(), activeElement.getHeight());
-
-//         Op de juiste plek vastpakken (werk niet)
-//        activeElement.setRect(e.getX() - xOffset, e.getY() - yOffset, activeElement.getWidth(), activeElement.getHeight());
-
-        draw(new FXGraphics2D(canvas.getGraphicsContext2D()));
+    private void update() {
+        for (Renderable renderable : renderables) {
+            renderable.draw();
+        }
     }
 
     private void createShapes() {
-        this.shapes = new Rectangle2D.Double[this.amountOfShapes];
-        this.colors = new Color[this.amountOfShapes];
-        double squareSize = 50;
-        double maxHeight = this.canvas.getHeight() - squareSize;
-        double maxWidth = this.canvas.getWidth() - squareSize;
+        this.renderables = new Renderable[this.amountOfShapes];
 
-        for (int i = 0; i < this.amountOfShapes; i++) {
-            this.shapes[i] = new Rectangle2D.Double(Math.random() * maxWidth, Math.random() * maxHeight, squareSize, squareSize);
-            this.colors[i] = Color.getHSBColor((float) Math.random(), 1, 1);
+        for (int i = 0; i < amountOfShapes; i++) {
+            this.renderables[i] = new Renderable(canvas, graphics, 50);
         }
     }
 }
