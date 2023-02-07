@@ -31,9 +31,6 @@ public class GradientPaintExercise extends Application {
 
 
     public void draw(FXGraphics2D graphics, double x, double y) {
-//        graphics.draw(new Line2D.Double(0, 0, 100, 100));
-//        graphics.setTransform(new AffineTransform());
-        graphics.setBackground(Color.white);
         graphics.clearRect(0, 0, (int) canvas.getWidth(), (int) canvas.getHeight());
 
         float radius = 250;
