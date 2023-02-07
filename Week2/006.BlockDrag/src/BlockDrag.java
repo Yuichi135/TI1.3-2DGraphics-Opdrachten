@@ -27,7 +27,6 @@ public class BlockDrag extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-
         BorderPane mainPane = new BorderPane();
         canvas = new ResizableCanvas(g -> draw(g), mainPane);
         mainPane.setCenter(canvas);
@@ -67,6 +66,9 @@ public class BlockDrag extends Application {
             if (this.renderables[i].contains(e.getX(), e.getY()))
                 this.activeShape = i;
         }
+
+        if (this.activeShape == -1)
+            return;
 
         Point2D point = this.renderables[this.activeShape].getCoords();
 
